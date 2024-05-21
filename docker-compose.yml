@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15    
+    environment:
+      PG_DATA: /var/lib/postgresql/data
+      POSTGRES_USER: testUser
+      POSTGRES_PASSWORD: 6NXpX5gPTpfX
+      POSTGRES_DB: OBRIO
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  rabbitmq:
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    build: ./rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  user-service:
+    build: ./user-service
+    env_file:
+      - ./user-service/.env
+    depends_on:
+      - postgres
+      - rabbitmq
+    ports:
+    - "3000:3000"
+
+
+  notification-service:
+    build: ./notification-service
+    env_file:
+      - ./notification-service/.env
+    depends_on:
+      - rabbitmq
+    ports:
+    - "5000:5000"
+
+volumes:
+  pgdata:
